@@ -1,0 +1,36 @@
+import hashlib
+import argparse
+import os
+import sys
+
+def compute_sha256(file_path, block_size=65536):
+    sha256 = hashlib.sha256()
+    try:
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(block_size), b''):
+                sha256.update(chunk)
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+    except IOError as e:
+        print(f"IO Error: {e}")
+        sys.exit(1)
+    return sha256.hexdigest()
+
+def main():
+    parser = argparse.ArgumentParser(description='File Hash Verifier using SHA256.')
+    parser.add_argument('--file', required=True, help='Path to the file to verify.')
+    parser.add_argument('--hash', required=True, help='Original SHA256 hash to compare against.')
+    args = parser.parse_args()
+
+    computed_hash = compute_sha256(args.file)
+    print(f"Computed SHA256: {computed_hash}")
+    print(f"Expected SHA256: {args.hash}")
+
+    if computed_hash.lower() == args.hash.lower():
+        print("✅ Hash match: File is verified.")
+    else:
+        print("❌ Hash mismatch: File may be corrupted or altered.")
+
+if __name__ == '__main__':
+    main()
